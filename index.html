@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>p{display: inline-block;}</style>
+</head>
+<body>
+    <h1>ESD délégué</h1>
+
+    <div id="divConnexions"></div>
+
+    <div id="conteneur-parent">
+        <div>
+            <p><input type="button" value="candidat 1" id="0" class="myButton" onclick="getId(this.id);"/></p>
+            <p id="votes1"></p>
+        </div>
+        <div>
+            <p><input type="button" value="candidat 2" id="1" class="myButton" onclick="getId(this.id);"/></p>
+            <p id="votes2"></p>
+        </div>
+        <div>
+            <p><input type="button" value="candidat 3" id="2" class="myButton" onclick="getId(this.id);"/></p>
+            <p id="votes3"></p>
+        </div>
+    </div>
+
+    <div id="divVotes"></div>
+    
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+
+        var socket = io.connect('http://localhost:8080');
+        socket.on('connexions', function(connexion) {
+            document.getElementById('divConnexions').innerHTML= 'Il y a actuellement ' + connexion + ' personnes connectées';
+        })
+
+        var compteur = 0
+        var idClique
+
+        function getId(monId) { 
+            idClique = monId; 
+        }
+
+        var input = document.getElementsByClassName("myButton");
+        var nombreEleves = input.length
+
+        $(input).click(function () {
+            if(compteur%2 == 0){
+                compteur++
+                for (let i = 0; i < nombreEleves; i++) {
+                    document.getElementById(i).disabled = true
+                }
+                document.getElementById(idClique).disabled = false
+                socket.emit('plus', idClique);       
+            }else{
+                compteur++
+                for (let i = 0; i < nombreEleves; i++) {
+                    document.getElementById(i).disabled = false
+                }
+                socket.emit('moins', idClique);
+            }
+        })
+
+        socket.on('votes0', function(nbVotes) {
+            document.getElementById('votes1').innerHTML= nbVotes + ' votes';
+        })
+        socket.on('votes1', function(nbVotes) {
+            document.getElementById('votes2').innerHTML= nbVotes + ' votes';
+        })
+        socket.on('votes2', function(nbVotes) {
+            document.getElementById('votes3').innerHTML= nbVotes + ' votes';
+        })
+        
+    </script>
+</body>
+</html>
